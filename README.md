@@ -28,35 +28,6 @@ Este trabajo sirve como referencia completa para aprender los principios de desa
 - rclpy (cliente de ROS 2 para Python)
 - ament-python (sistema de construcción para paquetes Python)
 
-## Estructura del Proyecto
-
-```
-MicroRobotica_ws/
-├── src/
-│   ├── sensor_pkg/                  # Paquete de sensores
-│   │   ├── sensor_pkg/
-│   │   │   ├── __init__.py
-│   │   │   ├── pub_temp.py          # Nodo publicador de sensor
-│   │   │   └── subs_temp.py         # Nodo subscriptor de sensor
-│   │   ├── package.xml
-│   │   ├── setup.py
-│   │   └── setup.cfg
-│   │
-│   └── conv_pkg/                    # Paquete de conversión de temperaturas
-│       ├── conv_pkg/
-│       │   ├── __init__.py
-│       │   ├── conv_celsius.py      # Nodo convertidor Fahrenheit → Celsius
-│       │   └── pub_fahrenheit.py    # Nodo publicador de temperaturas
-│       ├── package.xml
-│       ├── setup.py
-│       └── setup.cfg
-│
-├── build/                           # Artefactos de compilación
-├── install/                         # Paquetes instalados
-├── log/                             # Registros de compilación
-└── README.md
-```
-
 ## Arquitectura y Componentes
 
 ### 1. Paquete `sensor_pkg` - Sistema de Sensores
@@ -81,10 +52,6 @@ MicroRobotica_ws/
 - **Tópico**: `sensor` (tipo: `std_msgs/String`)
 - **Procesamiento**: Imprime datos en consola para diagnóstico y validación
 
-**Justificación técnica**:
-- Implementa el patrón de consumidor de datos
-- Callbacks síncronos garantizan procesamiento ordenado
-- Ideal para depuración y monitoreo en tiempo real
 
 ---
 
@@ -97,11 +64,6 @@ MicroRobotica_ws/
 - **Tópico**: `temp_f` (tipo: `std_msgs/Float32`)
 - **Rango inicial**: 70°F incrementándose 1°F por cada ciclo
 - **Frecuencia**: 1 Hz (1 mensaje por segundo)
-
-**Justificación técnica**:
-- Usa `rclpy.Node` para integración nativa con ROS 2
-- El timer proporciona periodicidad determinista para simulación de sensor
-- Almacena estado (valor actual) para generar datos progresivos
 
 #### Nodo: `conv_celsius` (Subscriptor y Publicador)
 **Archivo**: [src/conv_pkg/conv_pkg/conv_celsius.py](src/conv_pkg/conv_pkg/conv_celsius.py)
@@ -410,167 +372,63 @@ echo $ROS_PACKAGE_PATH
 
 ## Ejecución
 
-### Caso de uso 1: Sistema de Sensores (sensor_pkg)
+Las siguientes instrucciones muestran de forma didáctica cómo compilar (si hace falta) y ejecutar los paquetes en varias terminales. Se asume que el workspace está en `~/MicroRobotica_ws`.
 
-Este es el primer caso de uso implementado en el proyecto. Demuestra la comunicación básica entre un publicador y un subscriptor.
+Nota: antes de ejecutar los nodos, en cada terminal debes cargar el entorno de ROS 2 Jazzy y el `setup` del workspace.
 
-**Paso 1: Abre la Terminal 1**
+
+### sensor_pkg (primero)
+
+Compilación (si es necesario):
 ```bash
-# Asegúrate de estar en el workspace
-cd ~/MicroRobotica_ws
+# Terminal: compilar (si hace falta)
+colcon build
+source /opt/ros/jazzy/setup.bash
 source install/setup.bash
+```
 
-# Ejecuta el nodo publicador
+Terminal 1
+```bash
+source /opt/ros/jazzy/setup.bash
+source install/setup.bash
 ros2 run sensor_pkg pub_temp
 ```
 
-**Salida esperada en Terminal 1**:
-```
-temperatura0
-temperatura1
-temperatura2
-temperatura3
-...
-```
-
-**Paso 2: Abre una Terminal 2 (nueva)**
+Terminal 2
 ```bash
-# En la terminal nueva
-cd ~/MicroRobotica_ws
+source /opt/ros/jazzy/setup.bash
 source install/setup.bash
-
-# Ejecuta el nodo subscriptor
 ros2 run sensor_pkg subs_temp
 ```
 
-**Salida esperada en Terminal 2**:
-```
-temperatura0
-temperatura1
-temperatura2
-...
-```
-
----
-
-### Caso de uso 2: Sistema de Conversión de Temperaturas (conv_pkg)
-
-Este caso de uso demuestra un pipeline de procesamiento de datos: publicador → procesador → consumidor.
-
-**Paso 1: Abre Terminal 1**
+Terminal 3
 ```bash
-cd ~/MicroRobotica_ws
+source /opt/ros/jazzy/setup.bash
 source install/setup.bash
+ros2 topic echo /sensor
+```
 
-# Ejecuta el nodo publicador de Fahrenheit
+
+### conv_pkg (después)
+
+Terminal 1
+```bash
+source /opt/ros/jazzy/setup.bash
+source install/setup.bash
 ros2 run conv_pkg talker_f
 ```
 
-**Salida esperada**:
-```
-[INFO] Enviando: 70.0 °F
-[INFO] Enviando: 71.0 °F
-[INFO] Enviando: 72.0 °F
-...
-```
-
-**Paso 2: Abre Terminal 2 (nueva)**
+Terminal 2
 ```bash
-cd ~/MicroRobotica_ws
+source /opt/ros/jazzy/setup.bash
 source install/setup.bash
-
-# Ejecuta el nodo convertidor (suscriptor de F, publicador de C)
 ros2 run conv_pkg converter_c
 ```
 
-**Salida esperada**:
-```
-[INFO] Recibido: 70.0°F -> Convertido: 21.11°C
-[INFO] Recibido: 71.0°F -> Convertido: 21.67°C
-[INFO] Recibido: 72.0°F -> Convertido: 22.22°C
-...
-```
-
-**Paso 3: Terminal 3 (opcional - Monitoreo)**
+Terminal 3
 ```bash
-cd ~/MicroRobotica_ws
+source /opt/ros/jazzy/setup.bash
 source install/setup.bash
-
-# Monitorea el tópico de Fahrenheit
-ros2 topic echo /temp_f
-```
-
-O en otra terminal:
-```bash
-# Monitorea el tópico de Celsius
-ros2 topic echo /temp_c
-
-# Ejecuta el nodo subscriptor
-ros2 run sensor_pkg subs_temp
-```
-
-**Salida esperada en Terminal 2**:
-```
-temperatura0
-temperatura1
-temperatura2
-...
-```
-
----
-
-### Caso de uso 2: Sistema de Conversión de Temperaturas (conv_pkg)
-
-Este caso de uso demuestra un pipeline de procesamiento de datos: publicador → procesador → consumidor.
-
-**Paso 1: Abre Terminal 1**
-```bash
-cd ~/MicroRobotica_ws
-source install/setup.bash
-
-# Ejecuta el nodo publicador de Fahrenheit
-ros2 run conv_pkg talker_f
-```
-
-**Salida esperada**:
-```
-[INFO] Enviando: 70.0 °F
-[INFO] Enviando: 71.0 °F
-[INFO] Enviando: 72.0 °F
-...
-```
-** | Mode** | Modelo de comunicación basado en DDS, menor latencia, mejor soporte para sistemas distribuidos y embebidos |
-| **Python/rclpy** | Desarrollo rápido, integración sencilla con ROS 2, suficiente para lógica de aplicación (no crítica en tiempo real) |
-| **ament_python** | Sistema de construcción nativo de ROS 2, mejor integración que sistemas anteriores |
-| **std_msgs simple** | Eficiencia de ancho de banda, simplicidad en serialización, adecuado para aplicaciones educativas |
-| **Colcon build** | Gestión multiconfigurción, soporte para workspace modular, construcción paralela |
-| **Ubuntu 24.04 LTS** | Soporte de 5 años, kernels optimizados, compatibilidad de herramientas, estabilidad probada para robótica |
-| **Callbacks síncronos** | Determinismo, control de orden de procesamiento, adecuado para lógica secuencial |
-| **Sensor_pkg primero** | Enseña conceptos básicos de Pub-Sub antes de introducir procesamiento de datos |
-| **Sensor_pkg primero** | Enseña conceptos básicos de Pub-Sub antes de introducir procesamiento de datos
-ros2 run conv_pkg converter_c
-```
-
-**Salida esperada**:
-```
-[INFO] Recibido: 70.0°F -> Convertido: 21.11°C
-[INFO] Recibido: 71.0°F -> Convertido: 21.67°C
-[INFO] Recibido: 72.0°F -> Convertido: 22.22°C
-...
-```
-
-**Paso 3: Terminal 3 (opcional - Monitoreo)**
-```bash
-cd ~/MicroRobotica_ws
-source install/setup.bash
-
-# Monitorea el tópico de Fahrenheit
-ros2 topic echo /temp_f
-```
-
-O en otra terminal:
-```bash
-# Monitorea el tópico de Celsius
 ros2 topic echo /temp_c
 ```
 
@@ -602,26 +460,3 @@ ros2 node info /nombre_nodo
 ```bash
 ros2 run rqt_graph rqt_graph
 ```
-
-## Decisiones Técnicas Justificadas
-
-| Decisión | Justificación |
-|----------|--------------|
-| **ROS 2 sobre ROS 1** | Mejor modelo de comunicación con DDS, menor latencia, soporte para sistemas embebidos |
-| **Python/rclpy** | Desarrollo rápido, integración sencilla con ROS 2, suficiente para lógica de aplicación (no crítica en tiempo real) |
-| **ament_python** | Sistema de construcción nativo de ROS 2, mejor integración que catkin |
-| **std_msgs simple** | Eficiencia de ancho de banda, simplicidad en serialización, adecuado para aplicaciones educativas |
-| **Colcon build** | Gestión multiconfigurción, soporte para workspace modular, construcción paralela |
-| **Ubuntu 24.04 LTS** | Soporte de 5 años, kernels optimizados, compatibilidad de herramientas, estabilidad probada |
-| **Callbacks síncronos** | Determinismo, control de orden de procesamiento, adecuado para lógica secuencial |
-
-## Extensiones Posibles
-
-1. **Persistencia de datos**: Integrar grabadora ROS 2 (rosbag2) para análisis posterior
-2. **Visualización**: Usar `rqt` para dashboards en tiempo real
-3. **Control de parámetros**: Implementar `rclpy.parameter` para ajuste dinámico
-4. **Testing**: Expandir con pruebas unitarias usando pytest y `launch_ros`
-5. **Paralelización**: Implementar nodos con `MultiThreadedExecutor` para operaciones complejas
-6. **Hardware real**: Adaptar para sensores físicos (DHT11, termopares, etc.)
-
-
