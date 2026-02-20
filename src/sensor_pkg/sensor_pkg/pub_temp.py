@@ -11,7 +11,7 @@ class PubSensor(Node):
         self.i=0
     def callback(self):
         msg=String()
-        msg.data="temperatura"+str(self.i)
+        msg.data="temperatura "+str(self.i)
         self.publisher.publish(msg)
         self.i+=1
         print(msg)
