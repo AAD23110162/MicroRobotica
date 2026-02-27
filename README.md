@@ -4,13 +4,56 @@
 
 **MicroRobotica** es el repositorio de trabajo de **Alejandro Aguirre Diaz** (Autor) de la clase con el mismo nombre. En este repositorio se documenta todo el proceso de aprendizaje en **ROS 2** (Robot Operating System 2), desde la configuración inicial en un codespace de GitHub hasta la implementación de un sistema distribuido de comunicación entre nodos.
 
-El proyecto implementa:
-- **Subsistema de sensores**: Publicación y recepción de datos de sensores
-- **Subsistema de conversión de temperaturas**: Procesamiento en pipeline de transformación de unidades
-- **Arquitectura publish-subscribe**: Desacoplamiento entre productores y consumidores de datos
-- **Conceptos fundamentales de ROS 2**: Nodos, tópicos, mensajes y comunicación distribuida en sistemas de tiempo real
-
 Este trabajo sirve como referencia completa para aprender los principios de desarrollo de robótica moderna con ROS 2.
+
+## 📝 Actividades de Clase
+
+### Actividad I. Creación del entorno de trabajo
+Configuración del Workspace de ROS 2 Jazzy en un entorno de desarrollo basado en contenedores (Codespaces) y creación de los primeros paquetes de comunicación:
+
+* **[Paquete `sensor_pkg`](src/sensor_pkg):** Implementación básica de un nodo publicador de temperatura.
+* **[Paquete `conv_pkg`](src/conv_pkg):** Nodo suscriptor que realiza la conversión de datos a grados Celsius y los vuelve a publicar.
+
+---
+
+### Actividad II. Tópicos - Robot Planar RR
+Modelado de la cinemática de un brazo robótico de dos grados de libertad (RR) basándose en parámetros Denavit-Hartenberg (DH). Todo el desarrollo se encuentra en el siguiente paquete:
+
+* **[Paquete `robot_kinematics`](src/robot_kinematics):** Contiene la lógica de movimiento y cálculo espacial.
+    * **[Nodo Publicador de Articulaciones (`joint_publisher.py`)](src/robot_kinematics/robot_kinematics/joint_publisher.py):** Genera una trayectoria dinámica para los ángulos $q_1$ y $q_2$, oscilando entre 0 y 180 grados ($0$ a $\pi$ rad) de forma continua con logs en grados sexagesimales.
+    * **[Nodo de Cinemática Directa (`forward_kinematics.py`)](src/robot_kinematics/robot_kinematics/forward_kinematics.py):** Suscriptor que recibe los ángulos, aplica las ecuaciones de transformación basadas en la longitud de los eslabones ($l_1$ y $l_2$) y calcula la posición cartesiana $(x, y)$ del extremo final.
+
+**Descripción del conjunto:** El sistema simula el movimiento de un robot físico en tiempo real. Un nodo actúa como el "driver" de los motores (publicando estados de juntas), mientras que el otro actúa como el "procesador geométrico" que traduce esos movimientos angulares en una posición espacial útil, permitiendo monitorear el espacio de trabajo del robot de manera dinámica.
+### 🚀 Guía de Ejecución y Resultados
+
+Para poner en marcha el sistema de cinemática, abre tres terminales independientes y ejecuta los siguientes comandos:
+
+#### **Terminal 1: Generador de Movimiento (`joint_pub`)**
+Este nodo inicia la simulación enviando los ángulos de las articulaciones.
+```bash
+source /opt/ros/jazzy/setup.bash
+source install/setup.bash
+ros2 run robot_kinematics joint_pub
+```
+Aqui se mostrara una lista continua de los ángulos $q_1$ y $q_2$. Observarás cómo los valores aumentan hasta llegar a 180° y luego decrementan hasta 0°, mostrando la conversión de radianes a grados en tiempo real.
+
+#### **Terminal 2: Solucionador Cinemático (`fk_solver`)**
+Este nodo realiza los cálculos matemáticos basados en la tabla DH.
+```bash
+source /opt/ros/jazzy/setup.bash
+source install/setup.bash
+ros2 run robot_kinematics fk_solver
+```
+Se vera el log del nodo procesando cada mensaje recibido de las juntas y transformándolo en coordenadas cartesianas. Verás mensajes tipo: Extremo en -> X: 0.750, Y: 0.230.
+
+#### **Terminal 3: Monitor de Datos (`echo`)**
+Herramienta de introspección para verificar el tópico de salida.
+```bash
+source /opt/ros/jazzy/setup.bash
+source install/setup.bash
+ros2 topic echo /robot_position
+```
+Se mostrara la estructura pura del mensaje geometry_msgs/Point. Es la mejor forma de validar que los datos se están transmitiendo correctamente a través del middleware de ROS 2.
 
 ## Requisitos del Sistema
 
@@ -21,6 +64,7 @@ Este trabajo sirve como referencia completa para aprender los principios de desa
 ### Versión de ROS 2
 - **ROS 2 Jazzy Jalisco** (o compatible con formato de paquete ament_python)
   - **Justificación técnica**: ROS 2 utiliza una arquitectura basada en DDS (Data Distribution Service), proporcionando comunicación más eficiente y determinista. El formato de paquete ament_python permite crear nodos Python modernos con gestión automática de dependencias mediante setuptools.
+
 
 ### Requisitos de Desarrollo
 - Python 3.12+ (incluido en Ubuntu 24.04)
