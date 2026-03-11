@@ -26,6 +26,8 @@ setup(
         'console_scripts': [
             'joint_pub = robot_kinematics.joint_publisher:main',
             'fk_solver = robot_kinematics.forward_kinematics:main',
+            'ik_server = robot_kinematics.ik_server:main',
+            'ik_client = robot_kinematics.ik_client:main',
         ],
     },
 )
