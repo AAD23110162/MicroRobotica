@@ -55,6 +55,67 @@ ros2 topic echo /robot_position
 ```
 Se mostrara la estructura pura del mensaje geometry_msgs/Point. Es la mejor forma de validar que los datos se están transmitiendo correctamente a través del middleware de ROS 2.
 
+### Actividad III: Servicio (Cinemática Inversa)
+
+#### Descripción
+En esta actividad se implementó una arquitectura Cliente-Servidor en ROS 2 para calcular la **Cinemática Inversa** de un brazo robótico planar de 2 grados de libertad (2R). El robot asume longitudes de eslabón de $l_1 = 1.0$ y $l_2 = 1.0$.
+
+Para la comunicación, se definió un servicio personalizado llamado `MoveArm.srv` dentro del paquete `interface_robotics`:
+
+* **[Definición del servicio (`MoveArm.srv`)](src/interface_robotics/srv/MoveArm.srv)**
+
+```text
+# Petición (Request) - Coordenadas objetivo
+float64 x
+float64 y
+---
+# Respuesta (Response) - Ángulos articulares calculados
+float64 q1
+float64 q2
+```
+
+#### Nodos del Sistema (`robot_kinematics`)
+
+* **[Servidor de Cinemática Inversa (`ik_server.py`)](src/robot_kinematics/robot_kinematics/ik_server.py):** actúa como el cerebro matemático. Recibe las coordenadas espaciales $(X, Y)$ y calcula los ángulos articulares $(q_1, q_2)$ con trigonometría. Además, valida límites del espacio de trabajo; si el punto es inalcanzable, reporta error y responde de forma segura sin colapsar el nodo.
+* **[Cliente de Cinemática Inversa (`ik_client.py`)](src/robot_kinematics/robot_kinematics/ik_client.py):** nodo asíncrono de consola. Toma los argumentos de posición, envía la petición al servidor, espera la respuesta y muestra los resultados en radianes.
+
+#### Instrucciones de Ejecución
+Para probar el sistema, usa dos terminales distintas y ejecuta en ambas el entorno de ROS 2 y del workspace.
+
+1. Iniciar el servidor (Terminal 1)
+
+```bash
+source /opt/ros/jazzy/setup.bash
+source install/setup.bash
+ros2 run robot_kinematics ik_server
+```
+
+El servidor quedará a la espera con el mensaje: `Servidor de Cinematica Inversa listo para recibir coordenadas (X, Y)...`.
+
+2. Enviar una petición desde el cliente (Terminal 2)
+
+```bash
+source /opt/ros/jazzy/setup.bash
+source install/setup.bash
+ros2 run robot_kinematics ik_client 1.0 1.0
+```
+
+#### Prueba de Estrés: Mapeo Automático del Espacio de Trabajo
+Para comprobar los límites físicos del robot y la robustez del servidor, se puede usar un script de Bash que genera una matriz de coordenadas (de -2.0 a 2.0). Ejecuta este bloque con el servidor activo en otra terminal:
+
+```bash
+for x in $(seq -2.0 0.5 2.0); do
+    for y in $(seq -2.0 0.5 2.0); do
+        echo "======================================="
+        echo "Solicitando coordenadas X=$x, Y=$y"
+        ros2 run robot_kinematics ik_client "$x" "$y"
+        sleep 0.2
+    done
+done
+```
+
+Este barrido permite observar cómo el servidor resuelve los puntos válidos y rechaza de forma controlada los puntos matemáticamente inalcanzables.
+
 ## Requisitos del Sistema
 
 ### Versión del Sistema Operativo

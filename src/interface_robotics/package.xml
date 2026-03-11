@@ -22,5 +22,4 @@
   <export>
     <build_type>ament_cmake</build_type>
   </export>
-  <depend>interface_robotics</depend>
 </package>
