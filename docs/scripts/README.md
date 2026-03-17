@@ -465,3 +465,120 @@ $$
 $$
 
 lo que evita discontinuidades fuertes en el integrador.
+
+---
+
+# Graficas de los modelos dinamico
+
+## Pendulo-robot (codigo 001)
+
+Archivo base: [001_grafica_pendulo.py](001_grafica_pendulo.py)
+
+### Modelo implementado en el script
+
+El codigo integra la ecuacion:
+
+$$
+\ddot{q} = \frac{\tau - b\dot{q} - f_c\tanh(100000\dot{q}) - mg l_c\sin(q)}{I_r}
+$$
+
+con par de entrada:
+
+$$
+	au(t) = 1.5\sin(t)
+$$
+
+### Parametros usados
+
+- $m = 5.0$
+- $l_c = 0.01$
+- $g = 9.81$
+- $b = 0.17$
+- $f_c = 0.45$
+- $I_r = 0.16$
+
+### Configuracion numerica y salida
+
+- Estado inicial: $x_0 = [q(0),\dot{q}(0)] = [0,0]$
+- Intervalo: $t \in [0,10]$ s
+- Mallado: 1000 muestras uniformes
+- Integrador: RK45 (solve_ivp)
+- Grafica: una sola figura con $q$ y $\dot{q}$ superpuestas
+- Imagen generada: [../images/respuesta_pendulo.png](../images/respuesta_pendulo.png)
+
+![Caso 001 - Respuesta del pendulo](../images/respuesta_pendulo.png)
+
+## Robot de 2 GDL (codigo 002)
+
+Archivo base: [002_grafica_robot_2gdl.py](002_grafica_robot_2gdl.py)
+
+### Modelo implementado en el script
+
+El codigo integra la dinamica:
+
+$$
+M(q)\ddot{q} = \tau - C(q,\dot{q})\dot{q} - g(q) - f_r(\dot{q})
+$$
+
+y calcula la aceleracion como:
+
+$$
+\ddot{q} = M(q)^{-1}\left[\tau - C(q,\dot{q})\dot{q} - g(q) - f_r(\dot{q})\right]
+$$
+
+en implementacion numerica estable:
+
+$$
+\ddot{q} = \operatorname{solve}\left(M,\ \tau - C\dot{q} - g - f_r\right)
+$$
+
+Matrices y vectores usados en el codigo:
+
+$$
+M = \begin{bmatrix}
+3.117 + 0.2\cos(q_2) & 0.108 + 0.1\cos(q_2) \\
+0.108 + 0.1\cos(q_2) & 0.108
+\end{bmatrix}
+$$
+
+$$
+C = \begin{bmatrix}
+-0.2\sin(q_2)\dot{q}_2 & -0.1\sin(q_2)\dot{q}_2 \\
+0.1\sin(q_2)\dot{q}_1 & 0
+\end{bmatrix}
+$$
+
+$$
+g(q) = \begin{bmatrix}
+39.3\sin(q_1) + 1.95\sin(q_1+q_2) \\
+1.95\sin(q_1+q_2)
+\end{bmatrix}
+$$
+
+$$
+f_r(\dot{q}) = \begin{bmatrix}
+1.86\dot{q}_1 + 1.93\tanh(100000\dot{q}_1) \\
+0.16\dot{q}_2 + 0.3\tanh(100000\dot{q}_2)
+\end{bmatrix}
+$$
+
+Pares aplicados:
+
+$$
+tau_1(t) = (1-e^{-0.8t})32.0 + 56\sin(16t+0.1) + 12\sin(20t+0.15)
+$$
+
+$$
+tau_2(t) = (1-e^{-1.8t})1.2 + 8\sin(26t+0.08) + 2\sin(12t+0.34)
+$$
+
+### Configuracion numerica y salida
+
+- Estado inicial: $x_0 = [q_1(0),q_2(0),\dot{q}_1(0),\dot{q}_2(0)] = [0,0,0,0]$
+- Intervalo: $t \in [0,10]$ s
+- Mallado: 1000 muestras uniformes
+- Integrador: RK45 (solve_ivp)
+- Grafica: dos subfiguras (posiciones y velocidades articulares)
+- Imagen generada: [../images/respuesta_robot2gdl.png](../images/respuesta_robot2gdl.png)
+
+![Caso 002 - Respuesta robot 2GDL](../images/respuesta_robot2gdl.png)
