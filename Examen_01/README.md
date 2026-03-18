@@ -62,7 +62,51 @@ Cada script resuelve su sistema con `solve_ivp(..., method='RK45')` y guarda aut
 
 ## Marco matematico comun
 
-La forma general del modelo dinamico en robots se expresa como:
+En este examen, el modelo dinamico de cada robot se obtiene con el metodo de Euler-Lagrange.
+
+Para un sistema de $n$ grados de libertad (GDL), se definen:
+
+$$
+q = [q_1,\dots,q_n]^T, \qquad \dot{q} = [\dot{q}_1,\dots,\dot{q}_n]^T, \qquad \ddot{q} = [\ddot{q}_1,\dots,\ddot{q}_n]^T
+$$
+
+El Lagrangiano es:
+
+$$
+L(q,\dot{q}) = K(q,\dot{q}) - U(q)
+$$
+
+La ecuacion general de Euler-Lagrange por articulacion es:
+
+$$
+\frac{d}{dt}\left[\frac{\partial L}{\partial \dot{q}_i}\right] - \frac{\partial L}{\partial q_i} = Q_i, \qquad i = 1,\dots,n
+$$
+
+con fuerzas generalizadas no conservativas:
+
+$$
+Q_i = \tau_i - f_{ri}
+$$
+
+Definiciones estandar de matrices y vectores del modelo:
+
+$$
+M_{ij}(q) = \frac{\partial^2 K}{\partial \dot{q}_i\partial \dot{q}_j}
+$$
+
+$$
+c_{ijk}(q) = \frac{1}{2}\left(\frac{\partial M_{ij}}{\partial q_k} + \frac{\partial M_{ik}}{\partial q_j} - \frac{\partial M_{jk}}{\partial q_i}\right)
+$$
+
+$$
+\left[C(q,\dot{q})\dot{q}\right]_i = \sum_{j=1}^{n}\sum_{k=1}^{n} c_{ijk}(q)\dot{q}_j\dot{q}_k
+$$
+
+$$
+G_i(q) = \frac{\partial U}{\partial q_i}
+$$
+
+Por tanto, la forma matricial compacta queda:
 
 $$
 M(q)\,\ddot{q} + C(q,\dot{q})\,\dot{q} + G(q) + F_r(\dot{q}) = \tau
@@ -80,10 +124,19 @@ donde:
 Para integrar numericamente, cada modelo se pasa a primer orden con el estado:
 
 $$
-x = \begin{bmatrix} q \\ \dot{q} \end{bmatrix},
-\qquad
-\dot{x} = f(t,x)
+x = \begin{bmatrix} q \\ \dot{q} \end{bmatrix}, \qquad
+\dot{x} = \begin{bmatrix}
+\dot{q} \\
+M^{-1}(q)\left(\tau - C(q,\dot{q})\dot{q} - G(q) - F_r(\dot{q})\right)
+\end{bmatrix}
 $$
+
+Etiquetas de procedimiento matematico por robot (Euler-Lagrange):
+
+- [Ejercicio 1 - Centrifuga industrial (1 GDL)](#proc-euler-ej1-centrifuga)
+- [Ejercicio 2 - Robot cartesiano PPP (3 GDL)](#proc-euler-ej2-cartesiano)
+- [Ejercicio 3 - Robot RR (2 GDL)](#proc-euler-ej3-rr)
+- [Ejercicio 4 - Robot RRR planar (3 GDL)](#proc-euler-ej4-rrr)
 
 ---
 
@@ -105,7 +158,7 @@ Referencia:
 - Par aplicado:
 
 $$
-tau(t) = 15\,(1-e^{-2t})\,\text{N m}
+τ(t) = 15\,(1-e^{-2t})\,\text{N m}
 $$
 
 ### Ecuacion dinamica
@@ -132,53 +185,55 @@ $$
 \dot{x}_2 = \frac{15(1-e^{-2t}) - 0.5x_2}{2.5}
 $$
 
+<a id="proc-euler-ej1-centrifuga"></a>
+
 ### Desarrollo matematico base para la centrifuga
 
 Esta seccion presenta la derivacion fisica que lleva al modelo dinamico implementado en el script de Python.
 
 En esta derivacion se usa la notacion:
 
-- $qp = dq/dt$
-- $qpp = d^2q/dt^2$
+- $\dot{q} = \frac{dq}{dt}$
+- $\ddot{q} = \frac{d^2q}{dt^2}$
 
 #### 1. Cinematica diferencial (calculo de $v^2$)
 
-El objetivo es obtener la rapidez al cuadrado de la masa en rotacion, porque la energia cinetica traslacional usa $K = (1/2)mv^2$.
+El objetivo es obtener la rapidez al cuadrado de la masa en rotacion, porque la energia cinetica traslacional usa $K = \frac{1}{2}mv^2$.
 
 Posicion de una masa puntual a radio $r$:
 
 $$
-x = r sin(q)
+x = r\sin(q)
 $$
 
 $$
-y = -r cos(q)
+y = -r\cos(q)
 $$
 
 Derivadas temporales:
 
 $$
-xp = r cos(q) qp
+\dot{x} = r\cos(q)\dot{q}
 $$
 
 $$
-yp = r sin(q) qp
+\dot{y} = r\sin(q)\dot{q}
 $$
 
 Rapidez al cuadrado:
 
 $$
-v^2 = xp^2 + yp^2
+v^2 = \dot{x}^2 + \dot{y}^2
 $$
 
 $$
-v^2 = r^2 cos^2(q) qp^2 + r^2 sin^2(q) qp^2
+v^2 = r^2\cos^2(q)\dot{q}^2 + r^2\sin^2(q)\dot{q}^2
 $$
 
-Factorizando y usando $sin^2(theta)+cos^2(theta)=1$:
+Factorizando y usando $\sin^2(\theta)+\cos^2(\theta)=1$:
 
 $$
-v^2 = r^2 qp^2
+v^2 = r^2\dot{q}^2
 $$
 
 #### 2. Formulacion de energias
@@ -186,19 +241,19 @@ $$
 Energia cinetica de la masa en rotacion:
 
 $$
-K = (1/2) m v^2 = (1/2) m r^2 qp^2
+K = \frac{1}{2}mv^2 = \frac{1}{2}mr^2\dot{q}^2
 $$
 
 Definiendo la inercia equivalente:
 
 $$
-I = m r^2
+I = mr^2
 $$
 
 queda:
 
 $$
-K = (1/2) I qp^2
+K = \frac{1}{2}I\dot{q}^2
 $$
 
 Para este modelo, la energia potencial se toma constante (o nula de referencia), por lo que:
@@ -210,7 +265,7 @@ $$
 Lagrangiano:
 
 $$
-L = K - U = (1/2) I qp^2
+L = K - U = \frac{1}{2}I\dot{q}^2
 $$
 
 #### 3. Euler-Lagrange con friccion viscosa
@@ -218,49 +273,49 @@ $$
 Ecuacion de Euler-Lagrange con par externo y torque disipativo:
 
 $$
-d/dt[dL/dqp] - dL/dq = tau(t) - tau_f
+\frac{d}{dt}\left[\frac{\partial L}{\partial \dot{q}}\right] - \frac{\partial L}{\partial q} = \tau(t) - \tau_f
 $$
 
 Modelo de friccion viscosa:
 
 $$
-tau_f = b qp
+\tau_f = b\dot{q}
 $$
 
 Como $L$ no depende explicitamente de $q$:
 
 $$
-dL/dq = 0
+\frac{\partial L}{\partial q} = 0
 $$
 
 y
 
 $$
-dL/dqp = I qp
+\frac{\partial L}{\partial \dot{q}} = I\dot{q}
 $$
 
 por tanto:
 
 $$
-d/dt[dL/dqp] = I qpp
+\frac{d}{dt}\left[\frac{\partial L}{\partial \dot{q}}\right] = I\ddot{q}
 $$
 
 Sustituyendo:
 
 $$
-I qpp = tau(t) - b qp
+I\ddot{q} = \tau(t) - b\dot{q}
 $$
 
 o en forma cerrada:
 
 $$
-I qpp + b qp = tau(t)
+I\ddot{q} + b\dot{q} = \tau(t)
 $$
 
 Con el par aplicado del ejercicio:
 
 $$
-tau(t) = 15(1-e^{-2t})
+τ(t) = 15(1-e^{-2t})
 $$
 
 #### 4. Ecuacion final para simulacion
@@ -268,7 +323,7 @@ $$
 Despejando aceleracion angular:
 
 $$
-qpp = (tau(t) - b qp)/I
+\ddot{q} = \frac{\tau(t) - b\dot{q}}{I}
 $$
 
 Con los parametros del script:
@@ -280,13 +335,13 @@ $$
 se obtiene:
 
 $$
-qpp = (15(1-e^{-2t}) - 0.5 qp)/2.5
+\ddot{q} = \frac{15(1-e^{-2t}) - 0.5\dot{q}}{2.5}
 $$
 
 y en espacio de estado:
 
 $$
-x_1p = x_2, \qquad x_2p = (15(1-e^{-2t}) - 0.5x_2)/2.5
+\dot{x}_1 = x_2, \qquad \dot{x}_2 = \frac{15(1-e^{-2t}) - 0.5x_2}{2.5}
 $$
 
 #### 5. Empate directo con el programa de Python (base implementada)
@@ -297,8 +352,8 @@ La derivacion anterior se refleja en el script asi:
 
 1. Parametros fisicos: `m`, `r`, `I = m * r**2` y `b`.
 2. Par de entrada: `tau = 15.0 * (1 - np.exp(-2.0 * t))`.
-3. Dinamica escalar: `qpp = (tau - b * qp) / I`.
-4. Forma de estado para el integrador: retorno `return [qp, qpp]`.
+3. Dinamica escalar (notacion profesional): $\ddot{q} = \frac{\tau - b\dot{q}}{I}$.
+4. Forma de estado para el integrador: retorno del vector $[\dot{q},\ddot{q}]$.
 5. Integracion numerica: `solve_ivp(modelo_centrifuga, ...)`.
 
 Con esto, el desarrollo energetico y de Euler-Lagrange queda directamente referenciado en la implementacion numerica del programa.
@@ -322,7 +377,7 @@ Con esto, el desarrollo energetico y de Euler-Lagrange queda directamente refere
 Velocidad terminal teorica (linea punteada en la figura):
 
 $$
-\omega_{\infty} = \frac{\tau_{max}}{b} = \frac{15}{0.5} = 30\,rad/s
+\omega_{\infty} = \frac{\tau_{\text{max}}}{b} = \frac{15}{0.5} = 30\,rad/s
 $$
 
 $$
@@ -396,15 +451,17 @@ $$
 \dot{x}_e = [\dot{x},\dot{y},\dot{z},\ddot{x},\ddot{y},\ddot{z}]^T
 $$
 
+<a id="proc-euler-ej2-cartesiano"></a>
+
 ### Desarrollo matematico base para el robot cartesiano
 
 Esta seccion presenta la derivacion que sirve de base al modelo dinamico implementado para el robot cartesiano PPP.
 
 En esta derivacion se usa la notacion:
 
-- $xp = dx/dt$, $xpp = d^2x/dt^2$
-- $yp = dy/dt$, $ypp = d^2y/dt^2$
-- $zp = dz/dt$, $zpp = d^2z/dt^2$
+- $\dot{x} = \frac{dx}{dt}$, $\ddot{x} = \frac{d^2x}{dt^2}$
+- $\dot{y} = \frac{dy}{dt}$, $\ddot{y} = \frac{d^2y}{dt^2}$
+- $\dot{z} = \frac{dz}{dt}$, $\ddot{z} = \frac{d^2z}{dt^2}$
 
 #### 1. Cinematica diferencial (calculo de $v_x^2$, $v_y^2$, $v_z^2$)
 
@@ -417,13 +474,13 @@ $$
 La rapidez en cada eje se obtiene por derivacion directa:
 
 $$
-v_x^2 = xp^2, \qquad v_y^2 = yp^2, \qquad v_z^2 = zp^2
+v_x^2 = \dot{x}^2, \qquad v_y^2 = \dot{y}^2, \qquad v_z^2 = \dot{z}^2
 $$
 
 Si se considera la rapidez cartesiana total del efector:
 
 $$
-v^2 = xp^2 + yp^2 + zp^2
+v^2 = \dot{x}^2 + \dot{y}^2 + \dot{z}^2
 $$
 
 #### 2. Formulacion de energias
@@ -431,13 +488,13 @@ $$
 La energia cinetica total (modelo desacoplado por eje) es:
 
 $$
-K = (1/2)M_x xp^2 + (1/2)M_y yp^2 + (1/2)M_z zp^2
+K = \frac{1}{2}M_x\dot{x}^2 + \frac{1}{2}M_y\dot{y}^2 + \frac{1}{2}M_z\dot{z}^2
 $$
 
 La energia potencial gravitacional solo depende del eje vertical $z$:
 
 $$
-U = M_z g z
+U = M_zgz
 $$
 
 Lagrangiano:
@@ -451,7 +508,7 @@ $$
 Para cada coordenada generalizada $q_i$:
 
 $$
-d/dt[dL/dq_{ip}] - dL/dq_i = Q_i
+\frac{d}{dt}\left[\frac{\partial L}{\partial \dot{q}_i}\right] - \frac{\partial L}{\partial q_i} = Q_i
 $$
 
 donde $Q_i$ incluye fuerza del actuador menos friccion viscosa en cada eje.
@@ -459,53 +516,53 @@ donde $Q_i$ incluye fuerza del actuador menos friccion viscosa en cada eje.
 ##### Eje X
 
 $$
-dL/dxp = M_x xp, \qquad d/dt[dL/dxp] = M_x xpp, \qquad dL/dx = 0
+\frac{\partial L}{\partial \dot{x}} = M_x\dot{x}, \qquad \frac{d}{dt}\left[\frac{\partial L}{\partial \dot{x}}\right] = M_x\ddot{x}, \qquad \frac{\partial L}{\partial x} = 0
 $$
 
-Con $Q_x = F_x - b_x xp$:
+Con $Q_x = F_x - b_x\dot{x}$:
 
 $$
-M_x xpp = F_x - b_x xp
+M_x\ddot{x} = F_x - b_x\dot{x}
 $$
 
 $$
-xpp = (F_x - b_x xp)/M_x
+\ddot{x} = \frac{F_x - b_x\dot{x}}{M_x}
 $$
 
 ##### Eje Y
 
 $$
-dL/dyp = M_y yp, \qquad d/dt[dL/dyp] = M_y ypp, \qquad dL/dy = 0
+\frac{\partial L}{\partial \dot{y}} = M_y\dot{y}, \qquad \frac{d}{dt}\left[\frac{\partial L}{\partial \dot{y}}\right] = M_y\ddot{y}, \qquad \frac{\partial L}{\partial y} = 0
 $$
 
-Con $Q_y = F_y - b_y yp$:
+Con $Q_y = F_y - b_y\dot{y}$:
 
 $$
-M_y ypp = F_y - b_y yp
+M_y\ddot{y} = F_y - b_y\dot{y}
 $$
 
 $$
-ypp = (F_y - b_y yp)/M_y
+\ddot{y} = \frac{F_y - b_y\dot{y}}{M_y}
 $$
 
 ##### Eje Z
 
 $$
-dL/dzp = M_z zp, \qquad d/dt[dL/dzp] = M_z zpp, \qquad dL/dz = -M_z g
+\frac{\partial L}{\partial \dot{z}} = M_z\dot{z}, \qquad \frac{d}{dt}\left[\frac{\partial L}{\partial \dot{z}}\right] = M_z\ddot{z}, \qquad \frac{\partial L}{\partial z} = -M_zg
 $$
 
-Con $Q_z = F_z - b_z zp$:
+Con $Q_z = F_z - b_z\dot{z}$:
 
 $$
-M_z zpp + M_z g = F_z - b_z zp
-$$
-
-$$
-M_z zpp = F_z - M_z g - b_z zp
+M_z\ddot{z} + M_zg = F_z - b_z\dot{z}
 $$
 
 $$
-zpp = (F_z - M_z g - b_z zp)/M_z
+M_z\ddot{z} = F_z - M_zg - b_z\dot{z}
+$$
+
+$$
+\ddot{z} = \frac{F_z - M_zg - b_z\dot{z}}{M_z}
 $$
 
 #### 4. Ensamblaje matricial
@@ -513,7 +570,7 @@ $$
 Definiendo:
 
 $$
-q = [x,y,z]^T, \qquad qp = [xp,yp,zp]^T, \qquad qpp = [xpp,ypp,zpp]^T
+q = [x,y,z]^T, \qquad \dot{q} = [\dot{x},\dot{y},\dot{z}]^T, \qquad \ddot{q} = [\ddot{x},\ddot{y},\ddot{z}]^T
 $$
 
 $$
@@ -535,19 +592,19 @@ b_x & 0 & 0 \\
 $$
 
 $$
-g_v = [0,0,M_z g]^T, \qquad F = [F_x, F_y, F_z]^T
+g_v = [0,0,M_zg]^T, \qquad F = [F_x, F_y, F_z]^T
 $$
 
 La ecuacion dinamica compacta queda:
 
 $$
-M qpp + B qp + g_v = F
+M\ddot{q} + B\dot{q} + g_v = F
 $$
 
 o equivalentemente:
 
 $$
-qpp = M^{-1}(F - B qp - g_v)
+\ddot{q} = M^{-1}(F - B\dot{q} - g_v)
 $$
 
 #### 5. Ecuacion cerrada con las entradas del ejercicio
@@ -555,7 +612,7 @@ $$
 Usando las entradas definidas en la simulacion:
 
 $$
-F_x(t) = 400 sin(1.5t)
+F_x(t) = 400\sin(1.5t)
 $$
 
 $$
@@ -563,24 +620,24 @@ F_y(t) = 150(1-e^{-t})
 $$
 
 $$
-F_z(t) = M_z g + 50 sin(2t)
+F_z(t) = M_zg + 50\sin(2t)
 $$
 
 se obtiene:
 
 $$
-xpp = (400 sin(1.5t) - b_x xp)/M_x
+\ddot{x} = \frac{400\sin(1.5t) - b_x\dot{x}}{M_x}
 $$
 
 $$
-ypp = (150(1-e^{-t}) - b_y yp)/M_y
+\ddot{y} = \frac{150(1-e^{-t}) - b_y\dot{y}}{M_y}
 $$
 
 $$
-zpp = (50 sin(2t) - b_z zp)/M_z
+\ddot{z} = \frac{50\sin(2t) - b_z\dot{z}}{M_z}
 $$
 
-La ultima expresion aparece porque $F_z$ ya incluye compensacion exacta de gravedad ($M_z g$).
+La ultima expresion aparece porque $F_z$ ya incluye compensacion exacta de gravedad ($M_zg$).
 
 #### 6. Empate directo con el programa de Python (base implementada)
 
@@ -670,11 +727,11 @@ $$
 Los pares de entrada son excitaciones mixtas (rampa exponencial + senoidales):
 
 $$
-tau_1(t) = (1-e^{-0.8t})32 + 56\sin(16t+0.1) + 12\sin(20t+0.15)
+τ_1(t) = (1-e^{-0.8t})32 + 56\sin(16t+0.1) + 12\sin(20t+0.15)
 $$
 
 $$
-tau_2(t) = (1-e^{-1.8t})1.2 + 8\sin(26t+0.08) + 2\sin(12t+0.34)
+τ_2(t) = (1-e^{-1.8t})1.2 + 8\sin(26t+0.08) + 2\sin(12t+0.34)
 $$
 
 En simulacion se calcula:
@@ -685,55 +742,57 @@ $$
 
 (implementado con `np.linalg.solve(M, ...)` para mayor estabilidad numerica).
 
+<a id="proc-euler-ej3-rr"></a>
+
 ### Desarrollo matematico base para el robot RR
 
 Esta seccion documenta la base teorica que conduce al modelo dinamico implementado en el programa de Python.
 
 En esta derivacion se usa la notacion:
 
-- $q_1p = dq_1/dt$, $q_2p = dq_2/dt$
-- $q_1pp = d^2q_1/dt^2$, $q_2pp = d^2q_2/dt^2$
+- $\dot{q}_1 = \frac{dq_1}{dt}$, $\dot{q}_2 = \frac{dq_2}{dt}$
+- $\ddot{q}_1 = \frac{d^2q_1}{dt^2}$, $\ddot{q}_2 = \frac{d^2q_2}{dt^2}$
 
 #### 1. Cinematica diferencial (calculo de $v_1^2$ y $v_2^2$)
 
-El objetivo es obtener la rapidez al cuadrado de cada eslabon, porque la energia cinetica traslacional usa $K = (1/2)mv^2$.
+El objetivo es obtener la rapidez al cuadrado de cada eslabon, porque la energia cinetica traslacional usa $K = \frac{1}{2}mv^2$.
 
 ##### Eslabon 1
 
 Posicion:
 
 $$
-x_1 = l_{c1} sin(q_1)
+x_1 = l_{c1}\sin(q_1)
 $$
 
 $$
-y_1 = -l_{c1} cos(q_1)
+y_1 = -l_{c1}\cos(q_1)
 $$
 
 Derivadas temporales:
 
 $$
-x_1p = l_{c1} cos(q_1) q_1p
+\dot{x}_1 = l_{c1}\cos(q_1)\dot{q}_1
 $$
 
 $$
-y_1p = l_{c1} sin(q_1) q_1p
+\dot{y}_1 = l_{c1}\sin(q_1)\dot{q}_1
 $$
 
 Rapidez al cuadrado:
 
 $$
-v_1^2 = x_1p^2 + y_1p^2
+v_1^2 = \dot{x}_1^2 + \dot{y}_1^2
 $$
 
 $$
-v_1^2 = l_{c1}^2 cos^2(q_1) q_1p^2 + l_{c1}^2 sin^2(q_1) q_1p^2
+v_1^2 = l_{c1}^2\cos^2(q_1)\dot{q}_1^2 + l_{c1}^2\sin^2(q_1)\dot{q}_1^2
 $$
 
-Factorizando y usando $sin^2(theta) + cos^2(theta) = 1$:
+Factorizando y usando $\sin^2(\theta) + \cos^2(\theta) = 1$:
 
 $$
-v_1^2 = l_{c1}^2 q_1p^2
+v_1^2 = l_{c1}^2\dot{q}_1^2
 $$
 
 ##### Eslabon 2 (desarrollo algebraico completo)
@@ -741,69 +800,69 @@ $$
 Posicion:
 
 $$
-x_2 = l_1 sin(q_1) + l_{c2} sin(q_1 + q_2)
+x_2 = l_1\sin(q_1) + l_{c2}\sin(q_1 + q_2)
 $$
 
 $$
-y_2 = -l_1 cos(q_1) - l_{c2} cos(q_1 + q_2)
+y_2 = -l_1\cos(q_1) - l_{c2}\cos(q_1 + q_2)
 $$
 
 Derivadas temporales (regla de la cadena):
 
 $$
-x_2p = l_1 cos(q_1) q_1p + l_{c2} cos(q_1 + q_2)(q_1p + q_2p)
+\dot{x}_2 = l_1\cos(q_1)\dot{q}_1 + l_{c2}\cos(q_1 + q_2)(\dot{q}_1 + \dot{q}_2)
 $$
 
 $$
-y_2p = l_1 sin(q_1) q_1p + l_{c2} sin(q_1 + q_2)(q_1p + q_2p)
+\dot{y}_2 = l_1\sin(q_1)\dot{q}_1 + l_{c2}\sin(q_1 + q_2)(\dot{q}_1 + \dot{q}_2)
 $$
 
 Elevando al cuadrado:
 
 $$
-x_2p^2 = l_1^2 cos^2(q_1) q_1p^2 + l_{c2}^2 cos^2(q_1 + q_2)(q_1p + q_2p)^2
+\dot{x}_2^2 = l_1^2\cos^2(q_1)\dot{q}_1^2 + l_{c2}^2\cos^2(q_1 + q_2)(\dot{q}_1 + \dot{q}_2)^2
 $$
 
 $$
-+ 2 l_1 l_{c2} cos(q_1) cos(q_1 + q_2) q_1p (q_1p + q_2p)
++ 2l_1l_{c2}\cos(q_1)\cos(q_1 + q_2)\dot{q}_1(\dot{q}_1 + \dot{q}_2)
 $$
 
 $$
-y_2p^2 = l_1^2 sin^2(q_1) q_1p^2 + l_{c2}^2 sin^2(q_1 + q_2)(q_1p + q_2p)^2
+\dot{y}_2^2 = l_1^2\sin^2(q_1)\dot{q}_1^2 + l_{c2}^2\sin^2(q_1 + q_2)(\dot{q}_1 + \dot{q}_2)^2
 $$
 
 $$
-+ 2 l_1 l_{c2} sin(q_1) sin(q_1 + q_2) q_1p (q_1p + q_2p)
++ 2l_1l_{c2}\sin(q_1)\sin(q_1 + q_2)\dot{q}_1(\dot{q}_1 + \dot{q}_2)
 $$
 
-Sumando $x_2p^2 + y_2p^2$:
+Sumando $\dot{x}_2^2 + \dot{y}_2^2$:
 
 $$
-v_2^2 = l_1^2 q_1p^2 [cos^2(q_1)+sin^2(q_1)]
-$$
-
-$$
-+ l_{c2}^2 (q_1p + q_2p)^2 [cos^2(q_1+q_2)+sin^2(q_1+q_2)]
+v_2^2 = l_1^2\dot{q}_1^2[\cos^2(q_1)+\sin^2(q_1)]
 $$
 
 $$
-+ 2 l_1 l_{c2} q_1p (q_1p + q_2p) [cos(q_1)cos(q_1+q_2)+sin(q_1)sin(q_1+q_2)]
++ l_{c2}^2(\dot{q}_1 + \dot{q}_2)^2[\cos^2(q_1+q_2)+\sin^2(q_1+q_2)]
+$$
+
+$$
++ 2l_1l_{c2}\dot{q}_1(\dot{q}_1 + \dot{q}_2)[\cos(q_1)\cos(q_1+q_2)+\sin(q_1)\sin(q_1+q_2)]
 $$
 
 Los dos primeros corchetes valen 1 y, para el tercero:
 
 $$
-cos(A)cos(B) + sin(A)sin(B) = cos(A-B)
+\cos(A)\cos(B) + \sin(A)\sin(B) = \cos(A-B)
 $$
 
 $$
-cos(q_1)cos(q_1+q_2)+sin(q_1)sin(q_1+q_2)=cos(-q_2)=cos(q_2)
+\cos(q_1)\cos(q_1+q_2)+\sin(q_1)\sin(q_1+q_2)=\cos(-q_2)=\cos(q_2)
 $$
 
 Entonces:
 
 $$
-v_2^2 = l_1^2 q_1p^2 + l_{c2}^2 (q_1p + q_2p)^2 + 2 l_1 l_{c2} cos(q_2) q_1p (q_1p + q_2p)
+v_2^2 = l_1^2\dot{q}_1^2 + l_{c2}^2(\dot{q}_1 + \dot{q}_2)^2 + 2l_1l_{c2}\cos(q_2)\dot{q}_1(\dot{q}_1 + \dot{q}_2)
 $$
 
 #### 2. Formulacion de energias
@@ -811,31 +870,31 @@ $$
 Energia cinetica total (traslacion + rotacion):
 
 $$
-K = ((1/2)m_1 v_1^2 + (1/2)I_1 q_1p^2) + ((1/2)m_2 v_2^2 + (1/2)I_2 (q_1p + q_2p)^2)
+K = \left(\frac{1}{2}m_1 v_1^2 + \frac{1}{2}I_1\dot{q}_1^2\right) + \left(\frac{1}{2}m_2 v_2^2 + \frac{1}{2}I_2(\dot{q}_1 + \dot{q}_2)^2\right)
 $$
 
 Sustituyendo $v_1^2$ y $v_2^2$:
 
 $$
-K = (1/2)(m_1 l_{c1}^2 + I_1) q_1p^2
+K = \frac{1}{2}(m_1l_{c1}^2 + I_1)\dot{q}_1^2
 $$
 
 $$
-+ (1/2)m_2 [l_1^2 q_1p^2 + l_{c2}^2 (q_1p + q_2p)^2 + 2 l_1 l_{c2} cos(q_2) q_1p (q_1p + q_2p)]
++ \frac{1}{2}m_2\left[l_1^2\dot{q}_1^2 + l_{c2}^2(\dot{q}_1 + \dot{q}_2)^2 + 2l_1l_{c2}\cos(q_2)\dot{q}_1(\dot{q}_1 + \dot{q}_2)\right]
 $$
 
 $$
-+ (1/2)I_2 (q_1p + q_2p)^2
++ \frac{1}{2}I_2(\dot{q}_1 + \dot{q}_2)^2
 $$
 
 Energia potencial total:
 
 $$
-U = m_1 g y_1 + m_2 g y_2
+U = m_1gy_1 + m_2gy_2
 $$
 
 $$
-U = m_1 g[-l_{c1} cos(q_1)] + m_2 g[-l_1 cos(q_1) - l_{c2} cos(q_1 + q_2)]
+U = m_1g[-l_{c1}\cos(q_1)] + m_2g[-l_1\cos(q_1) - l_{c2}\cos(q_1 + q_2)]
 $$
 
 Lagrangiano:
@@ -849,73 +908,73 @@ $$
 Para la articulacion $k$:
 
 $$
-d/dt[dL/dq_kp] - dL/dq_k = tau_k
+\frac{d}{dt}\left[\frac{\partial L}{\partial \dot{q}_k}\right] - \frac{\partial L}{\partial q_k} = \tau_k
 $$
 
 Se evalua primero para el hombro ($k=1$).
 
-##### Paso 3.1: $dL/dq_1p$
+##### Paso 3.1: $\frac{\partial L}{\partial \dot{q}_1}$
 
 Como $U$ no depende de velocidades:
 
 $$
-dL/dq_1p = (m_1 l_{c1}^2 + I_1)q_1p + m_2 l_1^2 q_1p
+\frac{\partial L}{\partial \dot{q}_1} = (m_1l_{c1}^2 + I_1)\dot{q}_1 + m_2l_1^2\dot{q}_1
 $$
 
 $$
-+ m_2 l_{c2}^2 (q_1p + q_2p) + m_2 l_1 l_{c2} cos(q_2)(2q_1p + q_2p)
++ m_2l_{c2}^2(\dot{q}_1 + \dot{q}_2) + m_2l_1l_{c2}\cos(q_2)(2\dot{q}_1 + \dot{q}_2)
 $$
 
 $$
-+ I_2 (q_1p + q_2p)
++ I_2(\dot{q}_1 + \dot{q}_2)
 $$
 
 Agrupando terminos:
 
 $$
-dL/dq_1p = M_{11}(q) q_1p + M_{12}(q) q_2p
+\frac{\partial L}{\partial \dot{q}_1} = M_{11}(q)\dot{q}_1 + M_{12}(q)\dot{q}_2
 $$
 
 con:
 
 $$
-M_{11} = m_1 l_{c1}^2 + I_1 + m_2 l_1^2 + m_2 l_{c2}^2 + I_2 + 2 m_2 l_1 l_{c2} cos(q_2)
+M_{11} = m_1l_{c1}^2 + I_1 + m_2l_1^2 + m_2l_{c2}^2 + I_2 + 2m_2l_1l_{c2}\cos(q_2)
 $$
 
 $$
-M_{12} = m_2 l_{c2}^2 + I_2 + m_2 l_1 l_{c2} cos(q_2)
+M_{12} = m_2l_{c2}^2 + I_2 + m_2l_1l_{c2}\cos(q_2)
 $$
 
-##### Paso 3.2: $d/dt[dL/dq_1p]$
+##### Paso 3.2: $\frac{d}{dt}\left[\frac{\partial L}{\partial \dot{q}_1}\right]$
 
 Usando regla del producto y:
 
 $$
-d/dt[cos(q_2)] = -sin(q_2) q_2p
+\frac{d}{dt}[\cos(q_2)] = -\sin(q_2)\dot{q}_2
 $$
 
 se obtiene:
 
 $$
-d/dt[dL/dq_1p] = M_{11} q_1pp + M_{12} q_2pp
+\frac{d}{dt}\left[\frac{\partial L}{\partial \dot{q}_1}\right] = M_{11}\ddot{q}_1 + M_{12}\ddot{q}_2
 $$
 
 $$
-- 2 m_2 l_1 l_{c2} sin(q_2) q_1p q_2p - m_2 l_1 l_{c2} sin(q_2) q_2p^2
+- 2m_2l_1l_{c2}\sin(q_2)\dot{q}_1\dot{q}_2 - m_2l_1l_{c2}\sin(q_2)\dot{q}_2^2
 $$
 
 Los dos ultimos terminos corresponden a Coriolis y centrifugos.
 
-##### Paso 3.3: $dL/dq_1$
+##### Paso 3.3: $\frac{\partial L}{\partial q_1}$
 
 $K$ no depende de $q_1$, por lo que:
 
 $$
-dL/dq_1 = -dU/dq_1
+\frac{\partial L}{\partial q_1} = -\frac{\partial U}{\partial q_1}
 $$
 
 $$
-dL/dq_1 = -m_1 g l_{c1} sin(q_1) - m_2 g l_1 sin(q_1) - m_2 g l_{c2} sin(q_1 + q_2)
+\frac{\partial L}{\partial q_1} = -m_1gl_{c1}\sin(q_1) - m_2gl_1\sin(q_1) - m_2gl_{c2}\sin(q_1 + q_2)
 $$
 
 Este termino corresponde al vector de gravedad en la articulacion 1.
@@ -925,36 +984,36 @@ Este termino corresponde al vector de gravedad en la articulacion 1.
 Repitiendo el mismo procedimiento para $q_2$, la dinamica completa queda:
 
 $$
-M(q)qpp + C(q,qp)qp + g(q) = tau
+M(q)\ddot{q} + C(q,\dot{q})\dot{q} + g(q) = \tau
 $$
 
 De los desarrollos anteriores (primera fila):
 
 $$
-m_{11} = m_1 l_{c1}^2 + m_2(l_1^2 + l_{c2}^2 + 2 l_1 l_{c2} cos(q_2)) + I_1 + I_2
+m_{11} = m_1l_{c1}^2 + m_2\left(l_1^2 + l_{c2}^2 + 2l_1l_{c2}\cos(q_2)\right) + I_1 + I_2
 $$
 
 $$
-m_{12} = m_2(l_{c2}^2 + l_1 l_{c2} cos(q_2)) + I_2
+m_{12} = m_2\left(l_{c2}^2 + l_1l_{c2}\cos(q_2)\right) + I_2
 $$
 
 Terminos de Coriolis y centrifugos (primera fila):
 
 $$
-c_{11} = -2 m_2 l_1 l_{c2} sin(q_2) q_2p
+c_{11} = -2m_2l_1l_{c2}\sin(q_2)\dot{q}_2
 $$
 
 $$
-c_{12} = -m_2 l_1 l_{c2} sin(q_2) q_2p
+c_{12} = -m_2l_1l_{c2}\sin(q_2)\dot{q}_2
 $$
 
 Termino gravitacional (primera fila):
 
 $$
-g_1(q) = -(m_1 l_{c1} + m_2 l_1) g sin(q_1) - m_2 l_{c2} g sin(q_1 + q_2)
+g_1(q) = -(m_1l_{c1} + m_2l_1)g\sin(q_1) - m_2l_{c2}g\sin(q_1 + q_2)
 $$
 
-El mismo rigor se aplica a la articulacion 2 para completar la segunda fila de $M(q)$, $C(q,qp)$ y $g(q)$.
+El mismo rigor se aplica a la articulacion 2 para completar la segunda fila de $M(q)$, $C(q,\dot{q})$ y $g(q)$.
 
 #### 5. Modelo de friccion y ecuacion cerrada (2 GDL)
 
@@ -963,47 +1022,47 @@ Para cerrar la ecuacion dinamica, se agrega friccion viscosa y friccion seca (Co
 Modelo vectorial:
 
 $$
-f_f(qp) = Bqp + F_c sgn(qp)
+f_f(\dot{q}) = B\dot{q} + F_c\,\operatorname{sgn}(\dot{q})
 $$
 
 con:
 
 $$
-B = [[b_1,0],[0,b_2]], \quad F_c = [[f_{c1},0],[0,f_{c2}]]
+B = \begin{bmatrix} b_1 & 0 \\ 0 & b_2 \end{bmatrix}, \quad F_c = \begin{bmatrix} f_{c1} & 0 \\ 0 & f_{c2} \end{bmatrix}
 $$
 
 y:
 
 $$
-sgn(qp) = [sgn(q_1p), sgn(q_2p)]^T
+\operatorname{sgn}(\dot{q}) = \begin{bmatrix} \operatorname{sgn}(\dot{q}_1) \\ \operatorname{sgn}(\dot{q}_2) \end{bmatrix}
 $$
 
 En forma explicita por articulacion:
 
 $$
-f_{f1} = b_1 q_1p + f_{c1} sgn(q_1p)
+f_{f1} = b_1\dot{q}_1 + f_{c1}\operatorname{sgn}(\dot{q}_1)
 $$
 
 $$
-f_{f2} = b_2 q_2p + f_{c2} sgn(q_2p)
+f_{f2} = b_2\dot{q}_2 + f_{c2}\operatorname{sgn}(\dot{q}_2)
 $$
 
 Entonces, la ecuacion dinamica cerrada del manipulador 2 GDL queda:
 
 $$
-M(q)qpp + C(q,qp)qp + g(q) + f_f(qp) = tau
+M(q)\ddot{q} + C(q,\dot{q})\dot{q} + g(q) + f_f(\dot{q}) = \tau
 $$
 
 o equivalentemente:
 
 $$
-tau = M(q)qpp + C(q,qp)qp + g(q) + f_f(qp)
+τ = M(q)\ddot{q} + C(q,\dot{q})\dot{q} + g(q) + f_f(\dot{q})
 $$
 
 Para simulacion numerica puede usarse una aproximacion suave de la funcion signo:
 
 $$
-sgn(q_ip) approx tanh(k q_ip), \quad k >> 1
+\operatorname{sgn}(\dot{q}_i) \approx \tanh(k\dot{q}_i), \quad k \gg 1
 $$
 
 esto evita discontinuidades fuertes en el integrador.
@@ -1018,7 +1077,7 @@ La estructura teorica anterior se refleja en el script asi:
 2. Coriolis y centrifugos: se implementa en `C = np.array([...])` y su accion en el termino `C @ np.array([qp1, qp2])`.
 3. Gravedad $g(q)$: se modela en `par_grav = np.array([...])`.
 4. Friccion viscosa + Coulomb suavizada: se implementa en `fr = np.array([...])` con `tanh(100000 * qp_i)`.
-5. Entrada de pares $tau$: se define en `tau = np.array([...])` como suma de activacion exponencial y terminos senoidales.
+5. Entrada de pares $\tau$: se define en `tau = np.array([...])` como suma de activacion exponencial y terminos senoidales.
 6. Ecuacion final resuelta por el integrador: `vector_fuerzas = tau - (C @ np.array([qp1, qp2])) - par_grav - fr` y luego `q2p = np.linalg.solve(M, vector_fuerzas)`.
 
 Con esto, el desarrollo de Lagrange sirve como base conceptual y el script usa su version parametrizada para simulacion numerica estable.
@@ -1102,6 +1161,8 @@ $$
 \ddot{q}=M^{-1}(\tau - V - G - f_r)
 $$
 
+<a id="proc-euler-ej4-rrr"></a>
+
 ### Desarrollo matematico base para el robot RRR
 
 Esta seccion presenta la base teorica del manipulador planar RRR usada por el programa del Ejercicio 4.
@@ -1109,8 +1170,8 @@ Esta seccion presenta la base teorica del manipulador planar RRR usada por el pr
 En esta derivacion se usa la notacion:
 
 - $q = [q_1,q_2,q_3]^T$
-- $qp = [q_1p,q_2p,q_3p]^T$
-- $qpp = [q_1pp,q_2pp,q_3pp]^T$
+- $\dot{q} = [\dot{q}_1,\dot{q}_2,\dot{q}_3]^T$
+- $\ddot{q} = [\ddot{q}_1,\ddot{q}_2,\ddot{q}_3]^T$
 
 #### 1. Cinematica diferencial (calculo de $v_1^2$, $v_2^2$, $v_3^2$)
 
@@ -1119,69 +1180,69 @@ Se asume modelo planar con masas concentradas al final de cada eslabon, tal como
 ##### Masa 1 (extremo del eslabon 1)
 
 $$
-x_1 = l_1 cos(q_1)
+x_1 = l_1\cos(q_1)
 $$
 
 $$
-y_1 = l_1 sin(q_1)
+y_1 = l_1\sin(q_1)
 $$
 
 $$
-x_1p = -l_1 sin(q_1) q_1p, \qquad y_1p = l_1 cos(q_1) q_1p
+\dot{x}_1 = -l_1\sin(q_1)\dot{q}_1, \qquad \dot{y}_1 = l_1\cos(q_1)\dot{q}_1
 $$
 
 $$
-v_1^2 = x_1p^2 + y_1p^2 = l_1^2 q_1p^2
+v_1^2 = \dot{x}_1^2 + \dot{y}_1^2 = l_1^2\dot{q}_1^2
 $$
 
 ##### Masa 2 (extremo del eslabon 2)
 
 $$
-x_2 = l_1 cos(q_1) + l_2 cos(q_1+q_2)
+x_2 = l_1\cos(q_1) + l_2\cos(q_1+q_2)
 $$
 
 $$
-y_2 = l_1 sin(q_1) + l_2 sin(q_1+q_2)
+y_2 = l_1\sin(q_1) + l_2\sin(q_1+q_2)
 $$
 
 $$
-x_2p = -l_1 sin(q_1)q_1p - l_2 sin(q_1+q_2)(q_1p+q_2p)
+\dot{x}_2 = -l_1\sin(q_1)\dot{q}_1 - l_2\sin(q_1+q_2)(\dot{q}_1+\dot{q}_2)
 $$
 
 $$
-y_2p = l_1 cos(q_1)q_1p + l_2 cos(q_1+q_2)(q_1p+q_2p)
+\dot{y}_2 = l_1\cos(q_1)\dot{q}_1 + l_2\cos(q_1+q_2)(\dot{q}_1+\dot{q}_2)
 $$
 
 $$
-v_2^2 = l_1^2 q_1p^2 + l_2^2(q_1p+q_2p)^2 + 2 l_1 l_2 cos(q_2) q_1p(q_1p+q_2p)
+v_2^2 = l_1^2\dot{q}_1^2 + l_2^2(\dot{q}_1+\dot{q}_2)^2 + 2l_1l_2\cos(q_2)\dot{q}_1(\dot{q}_1+\dot{q}_2)
 $$
 
 ##### Masa 3 (extremo del eslabon 3)
 
 $$
-x_3 = l_1 cos(q_1) + l_2 cos(q_1+q_2) + l_3 cos(q_1+q_2+q_3)
+x_3 = l_1\cos(q_1) + l_2\cos(q_1+q_2) + l_3\cos(q_1+q_2+q_3)
 $$
 
 $$
-y_3 = l_1 sin(q_1) + l_2 sin(q_1+q_2) + l_3 sin(q_1+q_2+q_3)
+y_3 = l_1\sin(q_1) + l_2\sin(q_1+q_2) + l_3\sin(q_1+q_2+q_3)
 $$
 
 Luego de derivar y agrupar terminos:
 
 $$
-v_3^2 = l_1^2 q_1p^2 + l_2^2(q_1p+q_2p)^2 + l_3^2(q_1p+q_2p+q_3p)^2
+v_3^2 = l_1^2\dot{q}_1^2 + l_2^2(\dot{q}_1+\dot{q}_2)^2 + l_3^2(\dot{q}_1+\dot{q}_2+\dot{q}_3)^2
 $$
 
 $$
-+ 2 l_1 l_2 cos(q_2) q_1p(q_1p+q_2p)
++ 2l_1l_2\cos(q_2)\dot{q}_1(\dot{q}_1+\dot{q}_2)
 $$
 
 $$
-+ 2 l_1 l_3 cos(q_2+q_3) q_1p(q_1p+q_2p+q_3p)
++ 2l_1l_3\cos(q_2+q_3)\dot{q}_1(\dot{q}_1+\dot{q}_2+\dot{q}_3)
 $$
 
 $$
-+ 2 l_2 l_3 cos(q_3) (q_1p+q_2p)(q_1p+q_2p+q_3p)
++ 2l_2l_3\cos(q_3)(\dot{q}_1+\dot{q}_2)(\dot{q}_1+\dot{q}_2+\dot{q}_3)
 $$
 
 #### 2. Formulacion de energias
@@ -1189,27 +1250,27 @@ $$
 Energia cinetica total (traslacional):
 
 $$
-K = (1/2)m_1 v_1^2 + (1/2)m_2 v_2^2 + (1/2)m_3 v_3^2
+K = \frac{1}{2}m_1v_1^2 + \frac{1}{2}m_2v_2^2 + \frac{1}{2}m_3v_3^2
 $$
 
 Energia potencial total (gravedad en direccion $-Y$):
 
 $$
-U = m_1 g y_1 + m_2 g y_2 + m_3 g y_3
+U = m_1gy_1 + m_2gy_2 + m_3gy_3
 $$
 
 Sustituyendo $y_i$ y agrupando:
 
 $$
-U = (m_1+m_2+m_3) g l_1 sin(q_1)
+U = (m_1+m_2+m_3)gl_1\sin(q_1)
 $$
 
 $$
-+ (m_2+m_3) g l_2 sin(q_1+q_2)
++ (m_2+m_3)gl_2\sin(q_1+q_2)
 $$
 
 $$
-+ m_3 g l_3 sin(q_1+q_2+q_3)
++ m_3gl_3\sin(q_1+q_2+q_3)
 $$
 
 Lagrangiano:
@@ -1223,21 +1284,21 @@ $$
 Para cada articulacion $i$:
 
 $$
-d/dt[dL/dq_{ip}] - dL/dq_i = tau_i - f_{ri}
+\frac{d}{dt}\left[\frac{\partial L}{\partial \dot{q}_i}\right] - \frac{\partial L}{\partial q_i} = \tau_i - f_{ri}
 $$
 
 Al ensamblar las 3 ecuaciones se obtiene la forma compacta:
 
 $$
-M(q)qpp + V(q,qp) + G(q) + f_r(qp) = tau
+M(q)\ddot{q} + V(q,\dot{q}) + G(q) + f_r(\dot{q}) = \tau
 $$
 
 donde:
 
-- $M(q)$ es la matriz de inercia $3x3$
-- $V(q,qp)$ concentra terminos de Coriolis y centrifugos
-- $G(q)$ es el vector gravitacional
-- $f_r(qp)$ es friccion viscosa articular
+- $M(q)$ es la matriz de inercia $3x3$.
+- $V(q,\dot{q})$ concentra terminos de Coriolis y centrifugos.
+- $G(q)$ es el vector gravitacional.
+- $f_r(\dot{q})$ es friccion viscosa articular.
 
 #### 4. Correspondencia con las expresiones usadas en el script
 
@@ -1259,43 +1320,43 @@ M_{11}=(m_1+m_2+m_3)l_1^2 + (m_2+m_3)l_2^2 + m_3l_3^2
 $$
 
 $$
-+ 2(m_2+m_3)l_1l_2 cos(q_2) + 2m_3l_1l_3 cos(q_2+q_3) + 2m_3l_2l_3 cos(q_3)
++ 2(m_2+m_3)l_1l_2\cos(q_2) + 2m_3l_1l_3\cos(q_2+q_3) + 2m_3l_2l_3\cos(q_3)
 $$
 
 $$
-M_{12}=(m_2+m_3)l_2^2 + m_3l_3^2 + (m_2+m_3)l_1l_2 cos(q_2)
+M_{12}=(m_2+m_3)l_2^2 + m_3l_3^2 + (m_2+m_3)l_1l_2\cos(q_2)
 $$
 
 $$
-+ m_3l_1l_3 cos(q_2+q_3) + 2m_3l_2l_3 cos(q_3)
++ m_3l_1l_3\cos(q_2+q_3) + 2m_3l_2l_3\cos(q_3)
 $$
 
 $$
-M_{13}=m_3l_3^2 + m_3l_1l_3 cos(q_2+q_3) + m_3l_2l_3 cos(q_3)
+M_{13}=m_3l_3^2 + m_3l_1l_3\cos(q_2+q_3) + m_3l_2l_3\cos(q_3)
 $$
 
 $$
-M_{22}=(m_2+m_3)l_2^2 + m_3l_3^2 + 2m_3l_2l_3 cos(q_3)
+M_{22}=(m_2+m_3)l_2^2 + m_3l_3^2 + 2m_3l_2l_3\cos(q_3)
 $$
 
 $$
-M_{23}=m_3l_3^2 + m_3l_2l_3 cos(q_3), \qquad M_{33}=m_3l_3^2
+M_{23}=m_3l_3^2 + m_3l_2l_3\cos(q_3), \qquad M_{33}=m_3l_3^2
 $$
 
-El vector $V(q,qp)$ se implementa como $[v_1,v_2,v_3]^T$ y coincide con los terminos cuadraticos en velocidad obtenidos por Euler-Lagrange.
+El vector $V(q,\dot{q})$ se implementa como $[v_1,v_2,v_3]^T$ y coincide con los terminos cuadraticos en velocidad obtenidos por Euler-Lagrange.
 
 El vector de gravedad implementado es:
 
 $$
-g_1=(m_1+m_2+m_3)gl_1 cos(q_1) + (m_2+m_3)gl_2 cos(q_1+q_2) + m_3gl_3 cos(q_1+q_2+q_3)
+g_1=(m_1+m_2+m_3)gl_1\cos(q_1) + (m_2+m_3)gl_2\cos(q_1+q_2) + m_3gl_3\cos(q_1+q_2+q_3)
 $$
 
 $$
-g_2=(m_2+m_3)gl_2 cos(q_1+q_2) + m_3gl_3 cos(q_1+q_2+q_3)
+g_2=(m_2+m_3)gl_2\cos(q_1+q_2) + m_3gl_3\cos(q_1+q_2+q_3)
 $$
 
 $$
-g_3=m_3gl_3 cos(q_1+q_2+q_3)
+g_3=m_3gl_3\cos(q_1+q_2+q_3)
 $$
 
 #### 5. Modelo de friccion y ecuacion cerrada
@@ -1303,25 +1364,25 @@ $$
 En el script se usa friccion viscosa lineal:
 
 $$
-f_r(qp) = [3q_1p,\ 2q_2p,\ q_3p]^T
+f_r(\dot{q}) = [3\dot{q}_1,\ 2\dot{q}_2,\ \dot{q}_3]^T
 $$
 
 y para el caso simulado se considera caida libre (sin par motor):
 
 $$
-tau = [0,0,0]^T
+τ = [0,0,0]^T
 $$
 
 Por tanto, la dinamica final queda:
 
 $$
-M(q)qpp + V(q,qp) + G(q) + f_r(qp) = 0
+M(q)\ddot{q} + V(q,\dot{q}) + G(q) + f_r(\dot{q}) = 0
 $$
 
 o equivalentemente:
 
 $$
-qpp = M^{-1}(-V - G - f_r)
+\ddot{q} = M^{-1}(-V - G - f_r)
 $$
 
 #### 6. Empate directo con el programa de Python (base implementada)
