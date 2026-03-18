@@ -1022,7 +1022,7 @@ Para cerrar la ecuacion dinamica, se agrega friccion viscosa y friccion seca (Co
 Modelo vectorial:
 
 $$
-f_f(\dot{q}) = B\dot{q} + F_c\,\operatorname{sgn}(\dot{q})
+f_f(\dot{q}) = B\dot{q} + F_c\,sgn(\dot{q})
 $$
 
 con:
@@ -1034,17 +1034,17 @@ $$
 y:
 
 $$
-\operatorname{sgn}(\dot{q}) = \begin{bmatrix} \operatorname{sgn}(\dot{q}_1) \\ \operatorname{sgn}(\dot{q}_2) \end{bmatrix}
+sgn(\dot{q}) = \begin{bmatrix} sgn(\dot{q}_1) \\ sgn(\dot{q}_2) \end{bmatrix}
 $$
 
 En forma explicita por articulacion:
 
 $$
-f_{f1} = b_1\dot{q}_1 + f_{c1}\operatorname{sgn}(\dot{q}_1)
+f_{f1} = b_1\dot{q}_1 + f_{c1}\,sgn(\dot{q}_1)
 $$
 
 $$
-f_{f2} = b_2\dot{q}_2 + f_{c2}\operatorname{sgn}(\dot{q}_2)
+f_{f2} = b_2\dot{q}_2 + f_{c2}\,sgn(\dot{q}_2)
 $$
 
 Entonces, la ecuacion dinamica cerrada del manipulador 2 GDL queda:
@@ -1062,7 +1062,7 @@ $$
 Para simulacion numerica puede usarse una aproximacion suave de la funcion signo:
 
 $$
-\operatorname{sgn}(\dot{q}_i) \approx \tanh(k\dot{q}_i), \quad k \gg 1
+sgn(\dot{q}_i) \approx \tanh(k\dot{q}_i), \quad k \gg 1
 $$
 
 esto evita discontinuidades fuertes en el integrador.
