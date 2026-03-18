@@ -24,6 +24,12 @@ def configurar_estilo_grafica():
         'legend.framealpha': 0.9,
     })
 
+
+def agregar_pie_figura(fig):
+    """Agrega datos de identificacion en la parte inferior de la figura."""
+    pie_texto = "Alumno: Alejandro Aguirre Díaz   Registro: 23110162    Examen 1er Parcial de Micro Robotica    Grupo:7E"
+    fig.text(0.5, -0.05, pie_texto, ha='center', va='bottom', fontsize=12, color='#334155')
+
 # --- 1. Modelo dinámico de la Centrífuga (1 GDL) ---
 def modelo_centrifuga(t, x):
     # Vector de estado: x[0] = posición angular (q), x[1] = velocidad angular (qp)
@@ -90,6 +96,7 @@ ejes[1].set_ylabel('Velocidad (RPM)')
 ejes[1].legend(loc='lower right')
 
 fig.suptitle('Dinámica de una Centrífuga Industrial (1 GDL)', fontsize=14, fontweight='bold')
+agregar_pie_figura(fig)
 
 # --- Guardado Automático ---
 directorio_script = os.path.dirname(os.path.abspath(__file__))

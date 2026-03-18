@@ -25,6 +25,13 @@ def configurar_estilo_grafica():
         'legend.framealpha': 0.9,
     })
 
+
+def agregar_pie_figura(fig):
+    """Agrega datos de identificacion en la parte inferior de la figura."""
+    pie_texto = "Alumno: Alejandro Aguirre Díaz   Registro: 23110162    Examen 1er Parcial de Micro Robotica    Grupo:7E"
+    fig.text(0.5, -0.05, pie_texto, ha='center', va='bottom', fontsize=12, color='#334155')
+
+
 # --- 1. Modelo dinámico del robot 2GDL (Traducción exacta) ---
 def robot_2gdl(t, x):
     # Vector de posición y velocidad articular
@@ -114,6 +121,7 @@ ejes[1].set_ylabel('Velocidad (grados/s)')
 ejes[1].legend(loc='upper right')
 
 fig.suptitle('Dinámica del robot de transmisión directa de 2GDL', fontsize=14, fontweight='bold')
+agregar_pie_figura(fig)
 
 # --- Guardado Automático ---
 directorio_script = os.path.dirname(os.path.abspath(__file__))

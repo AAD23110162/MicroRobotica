@@ -1,10 +1,19 @@
-# Examen 01 - Modelado dinamico de robots
+# Examen del Primer Parcial - Modelado Dinamico de Robots
 
-Este directorio dentro del repositorio MicroRobotica, contiene los 4 ejercicios del Examen del 1er parcial, en dondce para cada uno se realizo su modelado dinamico y simulacion numerica en Python. Cada script genera una figura y/o imagen en la carpeta `Graficas/`.
+## Datos del estudiante
 
-## Descripcion del examen 1er parcial
+|  |  |
+|---|---|
+| Alumno | Alejandro Aguirre Díaz |
+| Registro | 23110162 |
+| Grupo | 7E |
+| Fecha de entrega | Miercoles 18 de marzo de 2026 |
 
-Documentar y reproducir el modelo dinamico de:
+Este directorio del repositorio MicroRobotica contiene los 4 ejercicios del examen del primer parcial. En cada ejercicio se realiza el modelado dinamico y la simulacion numerica en Python para obtener sus graficas de comportamiento.
+
+## Descripcion del examen
+
+Realizar y graficar el modelo dinamico de:
 
 1. Centrifuga industrial (1 GDL)
 2. Robot cartesiano PPP (3 GDL)
@@ -133,7 +142,7 @@ $$
 
 ![Dinamica de la centrifuga industrial](Graficas/G001_Centrifuga.png)
 
-### Que se observa
+### Observaciones principales
 
 - La posicion angular crece de forma monotona, indicando giro continuo sin invertir sentido.
 - La velocidad en RPM sube rapidamente durante el transitorio y luego se acerca a un valor de equilibrio.
@@ -226,7 +235,7 @@ $$
 
 ![Dinamica del robot cartesiano PPP](Graficas/G002_Cartesiano.png)
 
-### Que se observa
+### Observaciones principales
 
 - El eje X muestra oscilaciones alrededor del origen por la fuerza sinusoidal aplicada y la amortiguacion viscosa.
 - El eje Y presenta una respuesta de crecimiento transitorio y estabilizacion progresiva, consistente con una excitacion que se activa suavemente.
@@ -315,7 +324,7 @@ $$
 
 ![Dinamica del robot RR de 2 GDL](Graficas/G003_RR.png)
 
-### Que se observa
+### Observaciones principales
 
 - Las posiciones articulares muestran oscilaciones no lineales con contenido de alta frecuencia debido a la combinacion de entradas sinusoidales.
 - Las velocidades presentan picos transitorios y variaciones acopladas entre articulaciones, reflejando la matriz de inercia dependiente de la configuracion.
@@ -399,7 +408,7 @@ $$
 
 ![Dinamica del robot RRR planar de 3 GDL](Graficas/G004_RRR.png)
 
-### Que se observa
+### Observaciones principales
 
 - El robot inicia en una posicion de alta energia potencial y evoluciona bajo gravedad hacia configuraciones de menor energia.
 - Las velocidades articulares aumentan en el transitorio inicial y luego decrecen por el efecto disipativo de la friccion viscosa.
@@ -413,5 +422,7 @@ $$
 2. Cartesiano PPP: comportamiento desacoplado por eje con compensacion de gravedad en $z$.
 3. RR: dinamica acoplada no lineal con inercia dependiente de configuracion, gravedad y friccion mixta.
 4. RRR: caida libre no lineal acoplada con disipacion por friccion viscosa.
+
+Este documento organiza de forma uniforme el desarrollo matematico, la simulacion y la interpretacion de resultados para los cuatro sistemas roboticos solicitados en el examen.
 
 
