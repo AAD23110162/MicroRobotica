@@ -1,4 +1,4 @@
-# Examen del Primer Parcial - Modelado Dinamico de Robots
+# Examen del Primer Parcial de Micro Robotica
 
 ## Datos del estudiante
 
@@ -1369,6 +1369,5 @@ $$
 3. RR: dinamica acoplada no lineal con inercia dependiente de configuracion, gravedad y friccion mixta.
 4. RRR: caida libre no lineal acoplada con disipacion por friccion viscosa.
 
-Este documento organiza de forma uniforme el desarrollo matematico, la simulacion y la interpretacion de resultados para los cuatro sistemas roboticos solicitados en el examen.
 
 
