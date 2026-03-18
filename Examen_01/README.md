@@ -161,6 +161,16 @@ $$
 τ(t) = 15\,(1-e^{-2t})\,\text{N m}
 $$
 
+### Tabla de parametros fisicos usados en la simulacion
+
+| Parametro | Valor usado en el script | Unidad / modelo |
+|---|---:|---|
+| Masa m | 10.0 | kg |
+| Radio r | 0.5 | m |
+| Inercia I | 2.5 (I = m r^2) | kg m^2 |
+| Friccion viscosa b | 0.5 | N m s/rad |
+| Par de entrada tau(t) | 15(1-exp(-2t)) | N m |
+
 ### Ecuacion dinamica
 
 $$
@@ -422,6 +432,21 @@ $$
 $$
 F_z(t) = M_zg + 50\sin(2t)
 $$
+
+### Tabla de parametros fisicos usados en la simulacion
+
+| Parametro | Valor usado en el script | Unidad / modelo |
+|---|---:|---|
+| Gravedad g | 9.81 | m/s^2 |
+| Masa equivalente eje X (Mx) | 150.0 | kg |
+| Masa equivalente eje Y (My) | 60.0 | kg |
+| Masa equivalente eje Z (Mz) | 15.0 | kg |
+| Friccion viscosa eje X (bx) | 80.0 | N s/m |
+| Friccion viscosa eje Y (by) | 40.0 | N s/m |
+| Friccion viscosa eje Z (bz) | 20.0 | N s/m |
+| Fuerza aplicada eje X (Fx) | 400 sin(1.5 t) | N |
+| Fuerza aplicada eje Y (Fy) | 150(1-exp(-t)) | N |
+| Fuerza aplicada eje Z (Fz) | Mz g + 50 sin(2t) | N |
 
 ### Ecuaciones dinamicas
 
@@ -733,6 +758,21 @@ $$
 $$
 τ_2(t) = (1-e^{-1.8t})1.2 + 8\sin(26t+0.08) + 2\sin(12t+0.34)
 $$
+
+### Tabla de parametros fisicos usados en la simulacion
+
+| Parametro | Valor usado en el script | Unidad / modelo |
+|---|---|---|
+| Inercia M11 | 3.117 + 0.2 cos(q2) | kg m^2 |
+| Inercia M12 = M21 | 0.108 + 0.1 cos(q2) | kg m^2 |
+| Inercia M22 | 0.108 | kg m^2 |
+| Ganancias Coriolis/centrifugo | 0.2 y 0.1 | coeficientes del modelo |
+| Coeficientes gravitacionales | 39.3 y 1.95 | N m |
+| Friccion viscosa | b1 = 1.86, b2 = 0.16 | N m s/rad |
+| Friccion Coulomb | fc1 = 1.93, fc2 = 0.3 | N m |
+| Suavizado de signo | k = 100000 en tanh(k qp) | adimensional |
+| Par de entrada tau1(t) | (1-exp(-0.8 t))32 + 56 sin(16 t + 0.1) + 12 sin(20 t + 0.15) | N m |
+| Par de entrada tau2(t) | (1-exp(-1.8 t))1.2 + 8 sin(26 t + 0.08) + 2 sin(12 t + 0.34) | N m |
 
 En simulacion se calcula:
 
@@ -1124,6 +1164,20 @@ $$
 $$
 g=9.81\,m/s^2
 $$
+
+### Tabla de parametros fisicos usados en la simulacion
+
+| Parametro | Valor usado en el script | Unidad / modelo |
+|---|---:|---|
+| Masa m1 | 2.0 | kg |
+| Masa m2 | 1.5 | kg |
+| Masa m3 | 1.0 | kg |
+| Longitud l1 | 1.0 | m |
+| Longitud l2 | 0.8 | m |
+| Longitud l3 | 0.5 | m |
+| Gravedad g | 9.81 | m/s^2 |
+| Friccion viscosa articular | [3 qp1, 2 qp2, 1 qp3] (coeficientes 3, 2, 1) | N m s/rad |
+| Par aplicado tau | [0, 0, 0] | N m (caida libre) |
 
 ### Modelo dinamico implementado
 
