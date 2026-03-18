@@ -120,7 +120,7 @@ ejes[1].set_xlabel('Tiempo (s)')
 ejes[1].set_ylabel('Velocidad (grados/s)')
 ejes[1].legend(loc='upper right')
 
-fig.suptitle('Dinámica del robot de transmisión directa de 2GDL', fontsize=14, fontweight='bold')
+fig.suptitle('Dinámica del robot planar de 2GDL (RR)', fontsize=14, fontweight='bold')
 agregar_pie_figura(fig)
 
 # --- Guardado Automático ---
