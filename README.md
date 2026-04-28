@@ -116,6 +116,42 @@ done
 
 Este barrido permite observar cómo el servidor resuelve los puntos válidos y rechaza de forma controlada los puntos matemáticamente inalcanzables.
 
+### Actividad VII: Seguimiento de Trayectoria Circular con Control PD + Compensación de Gravedad
+
+#### Descripción
+En esta actividad se modeló en MATLAB el comportamiento dinámico de un robot planar de 2 GDL sometido a una ley de control PD con compensación de gravedad. El script [ActividadVII_23110162_7E.m](MATLAB/Scripts/ActividadVII_23110162_7E.m) integra la dinámica con `ode45`, reconstruye la posición cartesiana del extremo del manipulador por cinemática directa y genera una referencia circular de radio fijo para evaluar el seguimiento.
+
+La salida se resume en la imagen [Actividad VII_23110162_7E.png](MATLAB/Imagenes/Actividad%20VII_23110162_7E.png), donde se comparan la trayectoria deseada y la trayectoria real, además de las curvas de posición y velocidad articular.
+
+#### Análisis de resultados
+El controlador logra llevar al manipulador hacia la órbita de referencia y mantener un seguimiento estable durante la mayor parte de la simulación. En la gráfica cartesiana se observa un transitorio inicial pronunciado, especialmente en el arranque del movimiento, pero después la trayectoria real se acopla de forma razonable al círculo deseado. Las señales articulares muestran un movimiento suave y físicamente consistente, con un máximo esfuerzo al inicio por la corrección del error inicial y luego una evolución periódica acorde con la referencia.
+
+El resultado confirma que la compensación de gravedad ayuda a reducir la carga de la ley PD, aunque todavía existe desviación en la fase transitoria y pequeñas diferencias geométricas entre la referencia y la trayectoria obtenida.
+
+### Actividad VIII: Comparación de Leyes de Control y Cálculo del Índice L2
+
+#### Descripción
+En esta actividad se compararon tres estrategias de control para seguir una trayectoria circular: PD, TANH y ATAN. El script [ActividadVIII_23110162_7E.m](MATLAB/Scripts/ActividadVIII_23110162_7E.m) resuelve la dinámica para cada caso, reconstruye la trayectoria cartesiana real, calcula el error articular instantáneo y evalúa un índice de desempeño tipo RMS/L2 para cuantificar qué controlador sigue mejor la referencia.
+
+La figura correspondiente, [Actividad VIII_23110162_7E.png](MATLAB/Imagenes/Actividad%20VIII_23110162_7E.png), muestra la comparación de trayectorias, posiciones y velocidades articulares, la evolución del error y las barras del índice L2.
+
+#### Análisis de resultados
+De acuerdo con la gráfica de barras, el mejor desempeño lo obtiene el controlador PD con un índice L2 de aproximadamente 0.2273 rad, mientras que TANH y ATAN presentan errores mayores, cercanos a 0.3092 rad y 0.3014 rad, respectivamente. Esto indica que, para este caso, la ley PD ofrece la mejor precisión global de seguimiento.
+
+En las trayectorias cartesianas, los tres controladores siguen el círculo de forma aceptable, pero TANH y ATAN muestran una desviación ligeramente mayor en algunos tramos. La ventaja de los controladores no lineales aparece más en la suavidad de las señales y en la limitación de esfuerzos, aunque no superan al PD en exactitud para esta prueba concreta. La evolución del error confirma esta tendencia: el PD reduce antes la discrepancia angular y converge con menor error acumulado.
+
+### Actividad IX: Control Cartesiano en Espacio Operacional
+
+#### Descripción
+En esta actividad se implementó un control en espacio operacional para un brazo planar de 2 GDL. El script [ActividadIX_23110162_7E.m](MATLAB/Scripts/ActividadIX_23110162_7E.m) construye una trayectoria circular en coordenadas cartesianas, interpola la referencia temporal y aplica dinámica cartesiana basada en el Jacobiano para gobernar el movimiento articular. La salida visualiza la trayectoria deseada vs. la trayectoria real, así como las posiciones y velocidades angulares.
+
+La evidencia gráfica se encuentra en [Actividad IX_23110162_7E.png](MATLAB/Imagenes/Actividad%20IX_23110162_7E.png).
+
+#### Análisis de resultados
+El seguimiento cartesiano reproduce la forma general de la trayectoria circular, pero se nota una aproximación más discreta y con segmentos rectos cuando el número de puntos de referencia es reducido. Esto hace visible la dependencia entre la calidad de la interpolación y la suavidad del movimiento real. Aun así, el brazo converge a la zona de interés y mantiene coherencia geométrica con la referencia.
+
+Las gráficas articulares muestran cambios grandes al inicio, lo que refleja la necesidad de reconfigurar el manipulador desde una postura cercana a la singularidad inicial. En términos generales, el control cartesiano demuestra ser efectivo para imponer la trayectoria en el espacio operacional, aunque su desempeño final depende fuertemente de la discretización de la referencia, de las ganancias usadas y de la condición inicial del robot.
+
 ## Requisitos del Sistema
 
 ### Versión del Sistema Operativo
