@@ -152,6 +152,18 @@ El seguimiento cartesiano reproduce la forma general de la trayectoria circular,
 
 Las gráficas articulares muestran cambios grandes al inicio, lo que refleja la necesidad de reconfigurar el manipulador desde una postura cercana a la singularidad inicial. En términos generales, el control cartesiano demuestra ser efectivo para imponer la trayectoria en el espacio operacional, aunque su desempeño final depende fuertemente de la discretización de la referencia, de las ganancias usadas y de la condición inicial del robot.
 
+### Actividad X: Control por Par Calculado con Trayectoria Circular a Velocidad Tangencial Constante
+
+#### Descripción
+En esta actividad se implementó en MATLAB un esquema de control por par calculado para un robot planar de 2 GDL. El script [ActividadX_23110162_7E.m](MATLAB/Scripts/ActividadX_23110162_7E.m) genera una trayectoria circular con velocidad tangencial constante, calcula la referencia articular mediante cinemática inversa y aplica la ley de control en lazo cerrado para seguir tanto posición como velocidad deseadas.
+
+La evidencia gráfica se encuentra en [Actividad X_23110162_7E.png](MATLAB/Imagenes/Actividad%20X_23110162_7E.png), donde se comparan la trayectoria cartesiana deseada y real, además de la evolución de las posiciones y velocidades articulares.
+
+#### Análisis de resultados
+La figura muestra que el seguimiento cartesiano conserva la forma general de la trayectoria, pero el error es más notable al inicio debido a la condición inicial y al cambio brusco necesario para alcanzar la órbita deseada. A medida que avanza la simulación, la trayectoria real se aproxima mejor a la referencia y las señales articulares tienden a coincidir con las curvas ideales.
+
+El control por par calculado resulta adecuado para este tipo de maniobra porque compensa la dinámica del robot y permite imponer una referencia de velocidad constante sobre el extremo final. Sin embargo, el resultado también evidencia que la calidad del seguimiento depende de la sintonía de las ganancias y de la suavidad de la referencia, ya que en el arranque aparecen picos de velocidad y una separación visible entre las curvas deseadas y reales.
+
 ## Requisitos del Sistema
 
 ### Versión del Sistema Operativo
